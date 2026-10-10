@@ -1,0 +1,122 @@
+#libs
+```{r}
+library(dplyr)
+library(readxl)
+library(janitor)
+```
+
+#dados
+```{r}
+matriculados = read_excel("censo inep - consolidado.xlsx")
+docentes = read_excel("censo inep - consolidado.xlsx", sheet = "docentes")
+escolas = read_excel("censo inep - consolidado.xlsx", sheet = "escolas")
+turmas = read_excel("censo inep - consolidado.xlsx", sheet = "turmas")
+
+#removendo colunas duplicadas
+matriculados = matriculados |> select(which(!duplicated(as.list(matriculados))))
+docentes = docentes |> select(which(!duplicated(as.list(docentes))))
+escolas = escolas |> select(which(!duplicated(as.list(escolas))))
+turmas = turmas |> select(which(!duplicated(as.list(turmas))))
+```
+
+#matriculados
+```{r}
+matriculados |> 
+  select(NO_MUNICIPIO, QT_MAT_BAS, QT_MAT_INF, QT_MAT_FUND, QT_MAT_MED, QT_MAT_PROF, QT_MAT_EJA) |> 
+  adorn_totals("row")
+```
+
+#docentes
+```{r}
+docentes |> 
+  select(NO_MUNICIPIO, QT_DOC_BAS, QT_DOC_INF, QT_DOC_FUND, QT_DOC_MED, QT_DOC_PROF, QT_DOC_EJA) |> 
+  adorn_totals("row")
+```
+
+#escolas
+```{r}
+escolas |> 
+  select(NO_MUNICIPIO, QT_ESC_BAS, QT_ESC_INF, QT_ESC_FUND, QT_ESC_MED, QT_ESC_PROF, QT_ESC_EJA) |> 
+  adorn_totals("row")
+```
+
+#turmas
+```{r}
+turmas |> 
+  select(NO_MUNICIPIO, QT_TUR_BAS, QT_TUR_INF, QT_TUR_FUND, QT_TUR_MED, QT_TUR_PROF, QT_TUR_EJA) |> 
+  adorn_totals("row")
+```
+
+
+#educação infantil
+```{r}
+edu_inf = escolas |> 
+  select(NO_MUNICIPIO, QT_ESC_INF, QT_ESC_INF_CRE, QT_ESC_INF_PRE)
+
+edu_inf = edu_inf |> 
+  mutate("QT_MAT_INF" = matriculados$QT_MAT_INF[match(edu_inf$NO_MUNICIPIO, matriculados$NO_MUNICIPIO)],
+         "QT_MAT_INF_CRE" = matriculados$QT_MAT_INF_CRE[match(edu_inf$NO_MUNICIPIO, matriculados$NO_MUNICIPIO)],
+         "QT_MAT_INF_PRE" = matriculados$QT_MAT_INF_PRE[match(edu_inf$NO_MUNICIPIO, matriculados$NO_MUNICIPIO)])
+
+edu_inf = edu_inf |> 
+  mutate("QT_DOC_INF" = docentes$QT_DOC_INF[match(edu_inf$NO_MUNICIPIO, docentes$NO_MUNICIPIO)],
+         "QT_DOC_INF_CRE" = docentes$QT_DOC_INF_CRE[match(edu_inf$NO_MUNICIPIO, docentes$NO_MUNICIPIO)],
+         "QT_DOC_INF_PRE" = docentes$QT_DOC_INF_PRE[match(edu_inf$NO_MUNICIPIO, docentes$NO_MUNICIPIO)])
+
+edu_inf = edu_inf |> 
+  mutate("QT_TUR_INF" = turmas$QT_TUR_INF[match(edu_inf$NO_MUNICIPIO, turmas$NO_MUNICIPIO)],
+         "QT_TUR_INF_CRE" = turmas$QT_TUR_INF_CRE[match(edu_inf$NO_MUNICIPIO, turmas$NO_MUNICIPIO)],
+         "QT_TUR_INF_PRE" = turmas$QT_TUR_INF_PRE[match(edu_inf$NO_MUNICIPIO, turmas$NO_MUNICIPIO)])
+
+edu_inf = edu_inf |> adorn_totals("row")
+edu_inf
+```
+
+#ensino fundamental
+```{r}
+fund = escolas |> 
+  select(NO_MUNICIPIO, QT_ESC_FUND, QT_ESC_FUND_AI, QT_ESC_FUND_AF)
+
+fund = fund |> 
+  mutate("QT_MAT_FUND" = matriculados$QT_MAT_FUND[match(fund$NO_MUNICIPIO, matriculados$NO_MUNICIPIO)],
+         "QT_MAT_FUND_AI" = matriculados$QT_MAT_FUND_AI[match(fund$NO_MUNICIPIO, matriculados$NO_MUNICIPIO)],
+         "QT_MAT_FUND_AF" = matriculados$QT_MAT_FUND_AF[match(fund$NO_MUNICIPIO, matriculados$NO_MUNICIPIO)])
+
+fund = fund |> 
+  mutate("QT_DOC_FUND" = docentes$QT_DOC_FUND[match(fund$NO_MUNICIPIO, docentes$NO_MUNICIPIO)],
+         "QT_DOC_FUND_AI" = docentes$QT_DOC_FUND_AI[match(fund$NO_MUNICIPIO, docentes$NO_MUNICIPIO)],
+         "QT_DOC_FUND_AF" = docentes$QT_DOC_FUND_AF[match(fund$NO_MUNICIPIO, docentes$NO_MUNICIPIO)])
+
+fund = fund |> 
+  mutate("QT_TUR_FUND" = turmas$QT_TUR_FUND[match(fund$NO_MUNICIPIO, turmas$NO_MUNICIPIO)],
+         "QT_TUR_FUND_AI" = turmas$QT_TUR_FUND_AI[match(fund$NO_MUNICIPIO, turmas$NO_MUNICIPIO)],
+         "QT_TUR_FUND_AF" = turmas$QT_TUR_FUND_AF[match(fund$NO_MUNICIPIO, turmas$NO_MUNICIPIO)])
+
+fund = fund |> adorn_totals("row")
+fund
+```
+
+#ensino médio
+```{r}
+medio = escolas |> 
+  select(NO_MUNICIPIO, QT_ESC_MED, QT_ESC_MED_PROP, QT_ESC_MED_IFTP_CT...13)
+
+medio = medio |> 
+  mutate("QT_MAT_MED" = matriculados$QT_MAT_MED[match(medio$NO_MUNICIPIO, matriculados$NO_MUNICIPIO)],
+         "QT_MAT_MED_PROP" = matriculados$QT_MAT_MED_PROP[match(medio$NO_MUNICIPIO, matriculados$NO_MUNICIPIO)],
+         "QT_MAT_MED_IFTP" = matriculados$QT_MAT_MED_IFTP[match(medio$NO_MUNICIPIO, matriculados$NO_MUNICIPIO)])
+
+medio = medio |> 
+  mutate("QT_DOC_MED" = docentes$QT_DOC_MED[match(medio$NO_MUNICIPIO, docentes$NO_MUNICIPIO)],
+         "QT_DOC_MED_PROP" = docentes$QT_DOC_MED_PROP[match(medio$NO_MUNICIPIO, docentes$NO_MUNICIPIO)],
+         "QT_DOC_MED_IFTP" = docentes$QT_DOC_MED_IFTP_CT...14[match(medio$NO_MUNICIPIO, docentes$NO_MUNICIPIO)])
+
+medio = medio |> 
+  mutate("QT_TUR_MED" = turmas$QT_TUR_MED[match(medio$NO_MUNICIPIO, turmas$NO_MUNICIPIO)],
+         "QT_TUR_MED_PROP" = turmas$QT_TUR_MED_PROP[match(medio$NO_MUNICIPIO, turmas$NO_MUNICIPIO)],
+         "QT_TUR_MED_IFTP" = turmas$QT_TUR_MED_IFTP_CT...13[match(medio$NO_MUNICIPIO, turmas$NO_MUNICIPIO)])
+
+medio = medio |> adorn_totals("row")
+medio
+```
+

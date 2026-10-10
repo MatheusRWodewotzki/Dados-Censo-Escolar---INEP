@@ -1,0 +1,46 @@
+#pacotes
+```{r, message=FALSE, warning=FALSE}
+library(readxl)
+library(dplyr)
+library(janitor)
+```
+
+#docentes
+
+```{r, warning=FALSE, message=FALSE}
+docentes25 = read_excel("dados/microdados25.xlsx", sheet = "Tabela_Docente_2025")
+docentes25 = docentes25 |> 
+  select(CO_ENTIDADE, NO_ENTIDADE, NO_MUNICIPIO, QT_DOC_BAS, QT_DOC_EJA, QT_DOC_FUND, QT_DOC_MED, QT_DOC_INF)
+```
+
+```{r}
+docentes25 |>
+  group_by(NO_MUNICIPIO) |>
+  summarise("QT Docentes EB" = sum(QT_DOC_BAS),
+                                                  "QT Docentes EI" = sum(QT_DOC_INF),
+                                                  "QT Docentes EF" = sum(QT_DOC_FUND),
+                                                  "QT Docentes EM" = sum(QT_DOC_MED),
+                                                  "QT Docentes EJA" = sum(QT_DOC_EJA)) |> 
+  adorn_totals("row")
+```
+
+#turmas
+```{r}
+turmas25 = read_excel("dados/microdados25.xlsx", sheet = "Tabela_Turma_2025")
+turmas25 = turmas25 |> 
+  select(CO_ENTIDADE, Coluna1, QT_TUR_BAS, QT_TUR_INF, QT_TUR_FUND, QT_TUR_MED, QT_TUR_EJA) |> 
+  mutate("NO_ENTIDADE" = docentes25$NO_ENTIDADE[match(turmas25$CO_ENTIDADE, docentes25$CO_ENTIDADE)]) |> 
+  rename(NO_MUNICIPIO = Coluna1)
+```
+
+```{r}
+turmas25 |> 
+  group_by(NO_MUNICIPIO) |> 
+  summarise("QT Turmas EB" = sum(QT_TUR_BAS),
+            "QT Turmas EI" = sum(QT_TUR_INF),
+            "QT Turmas EF" = sum(QT_TUR_FUND),
+            "QT Turmas EM" = sum(QT_TUR_MED),
+            "QT Turmas EJA" = sum(QT_TUR_EJA)) |> 
+  adorn_totals("row")
+```
+
